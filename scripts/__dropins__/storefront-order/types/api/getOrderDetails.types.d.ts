@@ -78,6 +78,7 @@ export interface DiscountProps {
 }
 export interface TotalGiftOptionsProps {
     gift_wrapping_for_items: MoneyProps;
+    gift_wrapping_for_items_incl_tax: MoneyProps;
     gift_wrapping_for_order_incl_tax: MoneyProps;
     gift_wrapping_for_order: MoneyProps;
     printed_card: MoneyProps;
