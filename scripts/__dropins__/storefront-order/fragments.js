@@ -165,10 +165,6 @@ const o=`
         currency
         value
       }
-      gift_wrapping_for_items_incl_tax {
-        currency
-        value
-      }
       gift_wrapping_for_order {
         currency
         value

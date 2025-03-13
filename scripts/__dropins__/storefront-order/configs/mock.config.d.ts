@@ -44,10 +44,6 @@ export declare const gift_options: {
         currency: string;
         value: number;
     };
-    gift_wrapping_for_items_incl_tax: {
-        currency: string;
-        value: number;
-    };
     gift_wrapping_for_order: {
         currency: string;
         value: number;
@@ -522,10 +518,6 @@ export declare const transformMockOrderInput: {
                     total: {
                         gift_options: {
                             gift_wrapping_for_items: {
-                                currency: string;
-                                value: number;
-                            };
-                            gift_wrapping_for_items_incl_tax: {
                                 currency: string;
                                 value: number;
                             };
