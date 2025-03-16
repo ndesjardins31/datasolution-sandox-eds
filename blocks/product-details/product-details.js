@@ -48,7 +48,6 @@ export default async function decorate(block) {
         <div class="product-details__short-description"></div>
 
         <!-- Ajout du bloc pour les produits groupés -->
-        <div>${product?.__typename}</div>
         ${product?.__typename === 'GroupedProduct' ? `
           <div class="grouped-products-block" 
                data-block-name="grouped-products" 
