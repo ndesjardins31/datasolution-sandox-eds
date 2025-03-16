@@ -91,6 +91,16 @@ export default async function decorate(block) {
 
   block.appendChild(fragment);
 
+  // Initialiser le bloc des produits groupés s'il existe
+  if (product?.productType === 'complex' && product?.isBundle) {
+    const groupedProductsBlock = block.querySelector('.grouped-products-block');
+    if (groupedProductsBlock) {
+      // Importer et décorer le bloc
+      const { default: decorateGroupedProducts } = await import('../commerce/grouped-products/grouped-products.js');
+      await decorateGroupedProducts(groupedProductsBlock);
+    }
+  }
+
   // Alert
   let inlineAlert = null;
 
