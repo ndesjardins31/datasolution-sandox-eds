@@ -1,0 +1,6 @@
+<invoke name="run_terminal_cmd">
+<parameter name="command">console.log(product)</parameter>
+<parameter name="explanation">Je veux voir la structure complète de l'objet product pour comprendre comment identifier un produit groupé.</parameter>
+<parameter name="is_background">false</parameter>
+<parameter name="require_user_approval">true</parameter>
+</invoke> 
