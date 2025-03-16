@@ -47,17 +47,12 @@ export default async function decorate(block) {
         <div class="product-details__gallery"></div>
         <div class="product-details__short-description"></div>
 
-        <!-- Debug information -->
-        <div style="background: #f5f5f5; padding: 10px; margin: 10px 0;">
-          <pre>Product Type: ${product?.type}</pre>
-          <pre>Product Data: ${JSON.stringify(product, null, 2)}</pre>
-        </div>
-
-        <!-- Modification de la condition pour les produits groupés -->
-        ${product?.type === 'grouped' ? `
+        <!-- Ajout du bloc pour les produits groupés -->
+        <div>${product?.__typename}</div>
+        ${product?.__typename === 'GroupedProduct' ? `
           <div class="grouped-products-block" 
                data-block-name="grouped-products" 
-               data-product-id="${product?.id}">
+               data-product-id="${product?.sku}">
           </div>
         ` : ''}
 
