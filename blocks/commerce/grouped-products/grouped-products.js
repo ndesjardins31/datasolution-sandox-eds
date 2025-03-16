@@ -1,34 +1,36 @@
 import { fetchGraphQL } from '../../../scripts/commerce.js';
 
 export default async function decorate(block) {
+  console.log('Decorating grouped products block');
   const productId = block.dataset.productId;
+  console.log('Product ID:', productId);
 
-  // Requête GraphQL pour obtenir les détails des produits groupés
+  // Requête GraphQL simplifiée
   const query = `
     query GetGroupedProductDetails($productId: String!) {
-      products(filter: { id: { eq: $productId } }) {
-        items {
-          ... on GroupedProduct {
-            items {
-              product {
-                sku
-                name
-                price_range {
-                  minimum_price {
-                    final_price {
-                      value
-                      currency
-                    }
+      product(id: $productId) {
+        id
+        sku
+        name
+        options {
+          id
+          type
+          label
+          items {
+            id
+            label
+            product {
+              sku
+              name
+              price {
+                final {
+                  amount {
+                    value
+                    currency
                   }
                 }
-                stock_status
-                custom_attributes {
-                  attribute_code
-                  attribute_value
-                }
               }
-              qty
-              position
+              inStock
             }
           }
         }
@@ -37,32 +39,44 @@ export default async function decorate(block) {
   `;
 
   try {
+    console.log('Fetching data with query:', query);
     const response = await fetchGraphQL(query, { productId });
-    const groupedProducts = response.data?.products?.items[0]?.items || [];
+    console.log('GraphQL Response:', response);
 
-    // Extraire les tailles et couleurs uniques
-    const sizes = [...new Set(groupedProducts.map(item => 
-      item.product.custom_attributes.find(attr => attr.attribute_code === 'size')?.attribute_value
-    ).filter(Boolean))].sort();
+    if (!response.data?.product) {
+      throw new Error('No product data received');
+    }
 
-    const colors = [...new Set(groupedProducts.map(item => 
-      item.product.custom_attributes.find(attr => attr.attribute_code === 'color')?.attribute_value
-    ).filter(Boolean))].sort();
+    const options = response.data.product.options?.[0]?.items || [];
+    console.log('Product options:', options);
 
-    // Créer une map des produits par taille et couleur
+    // Extraire les tailles et couleurs des labels
+    const products = options.map(item => ({
+      sku: item.product.sku,
+      name: item.product.name,
+      price: item.product.price.final.amount.value,
+      currency: item.product.price.final.amount.currency,
+      inStock: item.product.inStock,
+      // Extraire taille et couleur du nom du produit
+      size: item.product.name.split('-')[1],
+      color: item.product.name.split('-')[2]
+    }));
+
+    const sizes = [...new Set(products.map(p => p.size))].sort();
+    const colors = [...new Set(products.map(p => p.color))].sort();
+
+    console.log('Processed products:', products);
+    console.log('Sizes:', sizes);
+    console.log('Colors:', colors);
+
+    // Créer une map des produits
     const productMap = {};
-    groupedProducts.forEach(item => {
-      const size = item.product.custom_attributes.find(attr => attr.attribute_code === 'size')?.attribute_value;
-      const color = item.product.custom_attributes.find(attr => attr.attribute_code === 'color')?.attribute_value;
-      
-      if (size && color) {
-        if (!productMap[color]) {
-          productMap[color] = {};
+    products.forEach(product => {
+      if (product.color && product.size) {
+        if (!productMap[product.color]) {
+          productMap[product.color] = {};
         }
-        productMap[color][size] = {
-          ...item.product,
-          qty: item.qty
-        };
+        productMap[product.color][product.size] = product;
       }
     });
 
@@ -80,7 +94,7 @@ export default async function decorate(block) {
     thead.appendChild(headerRow);
     table.appendChild(thead);
 
-    // Corps du tableau avec les couleurs et les inputs
+    // Corps du tableau
     const tbody = document.createElement('tbody');
     colors.forEach(color => {
       const row = document.createElement('tr');
@@ -89,7 +103,6 @@ export default async function decorate(block) {
         ${sizes.map(size => {
           const product = productMap[color]?.[size];
           if (product) {
-            const price = product.price_range.minimum_price.final_price;
             return `
               <td>
                 <div class="product-cell">
@@ -98,9 +111,9 @@ export default async function decorate(block) {
                     min="0" 
                     value="0"
                     data-sku="${product.sku}"
-                    ${product.stock_status === 'OUT_OF_STOCK' ? 'disabled' : ''}
+                    ${!product.inStock ? 'disabled' : ''}
                   />
-                  <span class="price">${price.value} ${price.currency}</span>
+                  <span class="price">${product.price} ${product.currency}</span>
                 </div>
               </td>
             `;
@@ -117,7 +130,6 @@ export default async function decorate(block) {
       if (e.target.tagName === 'INPUT') {
         const sku = e.target.dataset.sku;
         const quantity = parseInt(e.target.value, 10);
-        // Ici vous pouvez ajouter la logique pour mettre à jour le panier
         console.log(`Produit ${sku}: quantité ${quantity}`);
       }
     });
@@ -128,6 +140,6 @@ export default async function decorate(block) {
 
   } catch (error) {
     console.error('Erreur lors du chargement des produits groupés:', error);
-    block.innerHTML = '<div class="error">Erreur lors du chargement des produits</div>';
+    block.innerHTML = '<div class="error">Erreur lors du chargement des produits groupés: ${error.message}</div>';
   }
 }
