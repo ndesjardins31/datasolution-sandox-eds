@@ -54,10 +54,12 @@ export default async function decorate(block) {
         </div>
 
         <!-- Modification de la condition pour les produits groupés -->
+        ${(product?.productType === 'complex' && product?.isBundle) ? `
           <div class="grouped-products-block" 
                data-block-name="grouped-products" 
-               data-product-id="${product?.id}">
+               data-product-id="${product?.externalId}">
           </div>
+        ` : ''}
         
 
         <div class="product-details__configuration">
